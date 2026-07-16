@@ -23,6 +23,8 @@ export default function OutputPanel({
   recording,
   recordElapsed,
   recordDuration,
+  converting,
+  convertProgress,
   lastRecording,
   onDownloadLast
 }) {
@@ -44,6 +46,7 @@ export default function OutputPanel({
         options={FPS_OPTIONS}
         onChange={(v) => update({ fps: Number(v) })}
       />
+      <p className={panelStyles.helperText}>Video diekspor sebagai file .mp4.</p>
 
       <ToggleField label="Tampilkan Watermark" checked={wm.on} onChange={(v) => updateWatermark({ on: v })} />
       <p className={panelStyles.helperText}>
@@ -77,7 +80,32 @@ export default function OutputPanel({
         </div>
       ) : null}
 
-      {!recording && lastRecording ? (
+      {converting ? (
+        <div className={panelStyles.row}>
+          <span className={panelStyles.miniLabel}>Mengonversi ke MP4…</span>
+          <div
+            style={{
+              height: 4,
+              background: "var(--line-strong)",
+              borderRadius: 4,
+              overflow: "hidden"
+            }}
+          >
+            <div
+              style={{
+                height: "100%",
+                width: `${Math.min(100, convertProgress * 100)}%`,
+                background: "var(--teal)"
+              }}
+            />
+          </div>
+          <span className={panelStyles.helperText}>
+            Proses pertama kali agak lama karena mengunduh modul konversi. Jangan tutup halaman ini.
+          </span>
+        </div>
+      ) : null}
+
+      {!recording && !converting && lastRecording ? (
         <div className={panelStyles.imageActive}>
           <span className="material-symbols-outlined">movie</span>
           <span>Video terakhir siap diunduh</span>
