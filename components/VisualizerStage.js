@@ -20,7 +20,9 @@ export default function VisualizerStage({
   currentTime,
   duration,
   onSeek,
-  fileInputRef
+  fileInputRef,
+  watermarkOn,
+  onRemoveWatermark
 }) {
   return (
     <div className={s.stage}>
@@ -31,6 +33,16 @@ export default function VisualizerStage({
         <span className={`${s.mark} ${s.markBr}`} />
         <div className={s.canvasWrap}>
           <canvas ref={canvasRef} width={targetW} height={targetH} className={s.canvas} />
+          {watermarkOn ? (
+            <button
+              type="button"
+              className={s.watermarkChip}
+              onClick={onRemoveWatermark}
+              title="Hapus watermark"
+            >
+              ×
+            </button>
+          ) : null}
           {!hasAudio ? (
             <div className={s.dropzone}>
               <input
