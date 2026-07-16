@@ -55,7 +55,7 @@ export default function TopBar({
         <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
           {recording ? "stop_circle" : "videocam"}
         </span>
-        {recording ? "Stop" : "Rekam Video"}
+        {recording ? "Stop" : ""}
       </button>
     </header>
   );
