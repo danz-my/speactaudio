@@ -1,0 +1,95 @@
+.shell {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.sidebar {
+  width: 340px;
+  flex-shrink: 0;
+  background: var(--paper-hi);
+  border-right: 1px solid var(--line-strong);
+  overflow-y: auto;
+  padding: 0 18px 40px 18px;
+}
+
+.sidebarFooter {
+  padding: 18px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.autosaveNote {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+}
+
+.stageColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+}
+
+.watermarkChip {
+  position: absolute;
+  right: 56px;
+  bottom: 78px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(27, 26, 23, 0.75);
+  color: var(--paper-hi);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.watermarkChip:hover {
+  background: var(--accent);
+}
+
+.overlayBackdrop {
+  display: none;
+}
+
+@media (max-width: 880px) {
+  .sidebar {
+    position: fixed;
+    top: 61px;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    width: 86vw;
+    max-width: 360px;
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  .overlayBackdrop {
+    display: block;
+    position: fixed;
+    inset: 61px 0 0 0;
+    background: rgba(27, 26, 23, 0.35);
+    z-index: 20;
+  }
+}
