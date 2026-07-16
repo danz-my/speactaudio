@@ -1,0 +1,23 @@
+{
+  "name": "audios-speact",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "material-symbols": "latest",
+    "@fontsource/space-grotesk": "latest",
+    "@fontsource/jetbrains-mono": "latest",
+    "@fontsource/bebas-neue": "latest",
+    "@fontsource/instrument-serif": "latest",
+    "@fontsource/orbitron": "latest",
+    "@fontsource/russo-one": "latest",
+    "@fontsource/syne": "latest"
+  }
+}
