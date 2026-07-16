@@ -1,0 +1,146 @@
+.stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  min-height: 0;
+}
+
+.frame {
+  position: relative;
+  padding: 34px;
+}
+
+.mark {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+}
+
+.markTl { top: 0; left: 0; border-top: 1.5px solid var(--ink); border-left: 1.5px solid var(--ink); }
+.markTr { top: 0; right: 0; border-top: 1.5px solid var(--ink); border-right: 1.5px solid var(--ink); }
+.markBl { bottom: 0; left: 0; border-bottom: 1.5px solid var(--ink); border-left: 1.5px solid var(--ink); }
+.markBr { bottom: 0; right: 0; border-bottom: 1.5px solid var(--ink); border-right: 1.5px solid var(--ink); }
+
+.canvasWrap {
+  position: relative;
+  box-shadow: 0 18px 40px rgba(27, 26, 23, 0.16);
+  background: #fff;
+  line-height: 0;
+}
+
+.canvas {
+  display: block;
+  max-width: min(90vw, 640px);
+  max-height: 62vh;
+  width: auto;
+  height: auto;
+}
+
+.caption {
+  position: absolute;
+  bottom: -78px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+}
+
+.emptyHint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.emptyCard {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+  text-align: center;
+  max-width: 240px;
+  line-height: 1.6;
+}
+
+.dropzone {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.dropzoneBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 22px 26px;
+  border: 1.5px dashed rgba(239, 233, 220, 0.5);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--paper-hi);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.03em;
+}
+
+.dropzoneHint {
+  font-size: 9.5px;
+  color: rgba(239, 233, 220, 0.6);
+}
+
+.transport {
+  position: absolute;
+  bottom: -38px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.playBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper-hi);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.playBtn:disabled {
+  opacity: 0.4;
+}
+
+.seek {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 2px;
+  background: var(--line-strong);
+  outline: none;
+  accent-color: var(--accent);
+}
+
+.timeTag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-faint);
+  flex-shrink: 0;
+  min-width: 84px;
+  text-align: right;
+}
