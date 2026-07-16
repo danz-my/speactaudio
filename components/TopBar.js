@@ -6,6 +6,7 @@ export default function TopBar({
   w,
   h,
   recording,
+  converting,
   recordDisabled,
   onRecord,
   onReset,
@@ -33,10 +34,10 @@ export default function TopBar({
       </div>
       <div className={s.spacer} />
       <span className={s.sizeTag}>{w}×{h}</span>
-      {recording ? (
+      {recording || converting ? (
         <span className={s.recPill}>
           <span className={s.recDot} />
-          Merekam
+          {recording ? "Merekam" : "Konversi MP4"}
         </span>
       ) : null}
       <button className={s.resetBtn} type="button" onClick={onReset}>
@@ -49,7 +50,7 @@ export default function TopBar({
         className={s.downloadBtn}
         type="button"
         onClick={onRecord}
-        disabled={recordDisabled}
+        disabled={recordDisabled || converting}
       >
         <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
           {recording ? "stop_circle" : "videocam"}
