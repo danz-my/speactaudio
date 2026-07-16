@@ -1,11 +1,13 @@
 "use client";
 
-import { Section, SelectField, ColorField, ToggleField } from "../ui/Field";
+import { Section, SelectField, ColorField, ToggleField, SliderField } from "../ui/Field";
 import { TEMPLATES, COLOR_PRESETS } from "../../lib/defaults";
 import panelStyles from "./Panel.module.css";
 
 export default function TemplatePanel({ state, setState }) {
   const update = (patch) => setState((s) => ({ ...s, ...patch }));
+  const sway = state.sway;
+  const updateSway = (patch) => setState((s) => ({ ...s, sway: { ...s.sway, ...patch } }));
 
   return (
     <Section stage="02" title="Template" meta="Gaya Visual" defaultOpen>
@@ -54,6 +56,21 @@ export default function TemplatePanel({ state, setState }) {
           onChange={(v) => update({ mirror: v })}
         />
       ) : null}
+
+      <ToggleField label="Layar Bergoyang" checked={sway.on} onChange={(v) => updateSway({ on: v })}>
+        <SliderField
+          label="Kekuatan Goyangan"
+          value={sway.amount}
+          min={5}
+          max={100}
+          unit="%"
+          onChange={(v) => updateSway({ amount: v })}
+        />
+        <p className={panelStyles.helperText}>
+          Seluruh layar akan bergoyang pelan mengikuti irama, membuat visual terasa lebih hidup.
+        </p>
+      </ToggleField>
     </Section>
   );
 }
+
