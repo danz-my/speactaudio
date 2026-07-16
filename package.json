@@ -18,6 +18,8 @@
     "@fontsource/instrument-serif": "latest",
     "@fontsource/orbitron": "latest",
     "@fontsource/russo-one": "latest",
-    "@fontsource/syne": "latest"
+    "@fontsource/syne": "latest",
+    "@ffmpeg/ffmpeg": "^0.12.10",
+    "@ffmpeg/util": "^0.12.1"
   }
 }
