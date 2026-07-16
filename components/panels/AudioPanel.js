@@ -73,6 +73,14 @@ export default function AudioPanel({
         onChange={(v) => update({ sensitivity: v })}
       />
       <SliderField
+        label="Kekuatan Beat"
+        value={state.beatStrength}
+        min={20}
+        max={220}
+        unit="%"
+        onChange={(v) => update({ beatStrength: v })}
+      />
+      <SliderField
         label="Kehalusan Gerakan"
         value={state.smoothing}
         min={0}
@@ -89,8 +97,9 @@ export default function AudioPanel({
         onChange={(v) => update({ barCount: v })}
       />
       <p className={panelStyles.helperText}>
-        Sensitivitas mengatur seberapa besar reaksi visual terhadap volume. Kehalusan
-        meredam gerakan supaya tidak terlalu &quot;gugup&quot; mengikuti setiap ketukan kecil.
+        Sensitivitas mengatur reaksi terhadap volume musik secara umum. Kekuatan Beat
+        mengatur seberapa kuat &quot;kedutan&quot; visual saat ketukan/beat terasa. Kehalusan
+        meredam gerakan supaya tidak terlalu &quot;gugup&quot;.
       </p>
     </Section>
   );
