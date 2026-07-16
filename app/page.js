@@ -21,6 +21,7 @@ import {
   BeatDetector
 } from "../lib/audioEngine";
 import { startRecording, downloadBlob } from "../lib/recorder";
+import { convertWebmToMp4 } from "../lib/mp4Convert";
 import { saveSettings, loadSettings, clearSettings, mergeWithDefaults } from "../lib/storage";
 import s from "./page.module.css";
 
@@ -38,9 +39,12 @@ export default function Page() {
   const [centerImageEl, setCenterImageEl] = useState(null);
 
   const [recording, setRecording] = useState(false);
+  const [converting, setConverting] = useState(false);
+  const [convertProgress, setConvertProgress] = useState(0);
   const [lastRecording, setLastRecording] = useState(null);
 
   const canvasRef = useRef(null);
+  const ctxRef = useRef(null);
   const audioFileInputRef = useRef(null);
   const audioRef = useRef(null);
   const graphRef = useRef(null);
@@ -53,6 +57,7 @@ export default function Page() {
   const noiseTileRef = useRef(null);
   const beatDetectorRef = useRef(new BeatDetector());
   const beatPulseRef = useRef(0);
+  const lastFrameTimeRef = useRef(0);
   const rafRef = useRef(null);
   const fontsReadyRef = useRef(false);
   const hydrated = useRef(false);
@@ -113,23 +118,41 @@ export default function Page() {
   useEffect(() => {
     if (!hasAudio) return undefined;
     let active = true;
+    lastFrameTimeRef.current = performance.now();
 
     function loop() {
       if (!active) return;
       const canvas = canvasRef.current;
       const graph = graphRef.current;
+      const now = performance.now();
+      const dt = Math.min(0.1, (now - lastFrameTimeRef.current) / 1000);
+      lastFrameTimeRef.current = now;
+
       if (canvas && graph && fontsReadyRef.current) {
         readAnalyser(graph);
         const bass = bassEnergy(graph.freqData);
-        const { isBeat } = beatDetectorRef.current.update(bass, performance.now());
-        beatPulseRef.current = isBeat ? 1 : beatPulseRef.current * 0.88;
+        const { isBeat, ratio } = beatDetectorRef.current.update(bass, now);
+
+        // Attack: on a detected beat, snap up proportionally to how strong the
+        // transient was (louder hits punch harder). Release: smooth,
+        // frame-rate-independent exponential decay so playback speed or
+        // occasional dropped frames don't make the pulse look jerky.
+        if (isBeat) {
+          const target = Math.min(1.6, Math.max(0.55, (ratio - 1) * 1.1));
+          beatPulseRef.current = Math.max(beatPulseRef.current, target);
+        }
+        const releaseSeconds = 0.22;
+        beatPulseRef.current *= Math.exp(-dt / releaseSeconds);
 
         const st = stateRef.current;
         const a = ASPECTS.find((x) => x.id === st.aspect) || ASPECTS[0];
-        if (canvas.width !== a.w) canvas.width = a.w;
-        if (canvas.height !== a.h) canvas.height = a.h;
-        const ctx = canvas.getContext("2d");
-        renderFrame(ctx, a.w, a.h, st, {
+        if (canvas.width !== a.w || canvas.height !== a.h) {
+          canvas.width = a.w;
+          canvas.height = a.h;
+          ctxRef.current = canvas.getContext("2d");
+        }
+        if (!ctxRef.current) ctxRef.current = canvas.getContext("2d");
+        renderFrame(ctxRef.current, a.w, a.h, st, {
           freqData: graph.freqData,
           waveData: graph.waveData,
           bass,
@@ -160,9 +183,12 @@ export default function Page() {
       if (cancelled) return;
       fontsReadyRef.current = true;
       const a = ASPECTS.find((x) => x.id === state.aspect) || ASPECTS[0];
-      if (canvas.width !== a.w) canvas.width = a.w;
-      if (canvas.height !== a.h) canvas.height = a.h;
+      if (canvas.width !== a.w || canvas.height !== a.h) {
+        canvas.width = a.w;
+        canvas.height = a.h;
+      }
       const ctx = canvas.getContext("2d");
+      ctxRef.current = ctx;
       const dummyFreq = new Uint8Array(512).fill(0);
       const dummyWave = new Uint8Array(512).fill(128);
       renderFrame(ctx, a.w, a.h, state, {
@@ -173,7 +199,8 @@ export default function Page() {
         elapsedSec: performance.now() / 1000,
         bgImageEl,
         centerImageEl,
-        noiseTile: noiseTileRef.current
+        noiseTile: noiseTileRef.current,
+        idle: true
       });
     });
     return () => {
@@ -315,11 +342,34 @@ export default function Page() {
       canvas,
       audioStream: graph.streamDest.stream,
       fps: state.fps,
-      onStop: (blob) => {
-        setLastRecording(blob);
-        const base = (state.text.title || "audio-speact").trim() || "audio-speact";
-        downloadBlob(blob, `${base}.webm`);
+      onStop: async (blob, mimeType) => {
         setRecording(false);
+        const base = (state.text.title || "audio-speact").trim() || "audio-speact";
+
+        if (mimeType && mimeType.startsWith("video/mp4")) {
+          setLastRecording(blob);
+          downloadBlob(blob, `${base}.mp4`);
+          return;
+        }
+
+        // Browser couldn't record MP4 natively — transcode the WebM
+        // recording to MP4 in-browser before handing it to the user.
+        setConverting(true);
+        setConvertProgress(0);
+        try {
+          const mp4Blob = await convertWebmToMp4(blob, (p) => setConvertProgress(p));
+          setLastRecording(mp4Blob);
+          downloadBlob(mp4Blob, `${base}.mp4`);
+        } catch (err) {
+          console.error(err);
+          alert(
+            "Rekaman berhasil tapi konversi ke MP4 gagal. Video sudah diunduh dalam format WebM sebagai gantinya."
+          );
+          setLastRecording(blob);
+          downloadBlob(blob, `${base}.webm`);
+        } finally {
+          setConverting(false);
+        }
       },
       onError: (err) => {
         console.error(err);
@@ -346,7 +396,8 @@ export default function Page() {
   function handleDownloadLast() {
     if (!lastRecording) return;
     const base = (state.text.title || "audio-speact").trim() || "audio-speact";
-    downloadBlob(lastRecording, `${base}.webm`);
+    const ext = lastRecording.type && lastRecording.type.includes("mp4") ? "mp4" : "webm";
+    downloadBlob(lastRecording, `${base}.${ext}`);
   }
 
   function handleReset() {
@@ -362,6 +413,7 @@ export default function Page() {
         w={aspect.w}
         h={aspect.h}
         recording={recording}
+        converting={converting}
         recordDisabled={!hasAudio}
         onRecord={handleToggleRecord}
         onReset={handleReset}
@@ -407,6 +459,8 @@ export default function Page() {
             recording={recording}
             recordElapsed={currentTime}
             recordDuration={duration}
+            converting={converting}
+            convertProgress={convertProgress}
             lastRecording={lastRecording}
             onDownloadLast={handleDownloadLast}
           />
@@ -429,17 +483,11 @@ export default function Page() {
             duration={duration}
             onSeek={handleSeek}
             fileInputRef={audioFileInputRef}
+            watermarkOn={state.watermark.on}
+            onRemoveWatermark={() =>
+              setState((st) => ({ ...st, watermark: { ...st.watermark, on: false } }))
+            }
           />
-          {state.watermark.on ? (
-            <button
-              type="button"
-              className={s.watermarkChip}
-              title="Hapus watermark"
-              onClick={() => setState((st) => ({ ...st, watermark: { ...st.watermark, on: false } }))}
-            >
-              ×
-            </button>
-          ) : null}
         </div>
       </div>
     </div>
